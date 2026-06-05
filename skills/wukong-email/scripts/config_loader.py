@@ -1,14 +1,14 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Wukong Email Configuration Loader (简化版)
-===========================================
-只从 ~/.wukong-email/.env 文件加载配置，不需要 config.yaml
+Wukong Email Config Loader (Simplified)
+========================================
+Loads config from ~/.wukong-email/.env file only; does not need config.yaml
 
-优先级顺序：
-1. 系统环境变量
-2. ~/.wukong-email/.env 文件
-3. 代码默认值
+Priority order:
+1. System environment variables
+2. ~/.wukong-email/.env file
+3. Code defaults
 
 Usage:
     from config_loader import load_config
@@ -24,7 +24,7 @@ from pathlib import Path
 from typing import Dict, Any, Optional
 import re
 
-# 模块级缓存
+# Module-level cache
 _cached_config: Optional[Dict[str, Any]] = None
 CONFIG_DIR = Path.home() / '.wukong-email'
 ENV_FILE = CONFIG_DIR / '.env'
@@ -32,22 +32,22 @@ ENV_FILE = CONFIG_DIR / '.env'
 
 def find_env_file() -> Optional[Path]:
     """
-    查找用户级 .env 文件
-    返回 Path 对象，如果未找到返回 None
+    Find user-level .env file.
+    Returns Path object, or None if not found.
     """
     return ENV_FILE if ENV_FILE.exists() else None
 
 
 def load_dotenv(env_path: Optional[Path] = None) -> Dict[str, str]:
     """
-    加载 .env 文件并返回字典
-    简单实现（不需要 python-dotenv）
+    Load .env file and return a dict.
+    Simple implementation (does not require python-dotenv).
 
     Args:
-        env_path: .env 文件路径。如果为 None，使用 ~/.wukong-email/.env
+        env_path: Path to .env file. If None, uses ~/.wukong-email/.env
 
     Returns:
-        环境变量字典
+        Environment variable dict
     """
     if env_path is None:
         env_path = find_env_file()
@@ -59,15 +59,15 @@ def load_dotenv(env_path: Optional[Path] = None) -> Dict[str, str]:
     with open(env_path, 'r', encoding='utf-8') as f:
         for line in f:
             line = line.strip()
-            # 跳过注释和空行
+            # Skip comments and blank lines
             if not line or line.startswith('#'):
                 continue
 
-            # 解析 KEY=VALUE 或 KEY="VALUE"
+            # Parse KEY=VALUE or KEY="VALUE"
             match = re.match(r'^([A-Z_][A-Z0-9_]*)=(.*)$', line)
             if match:
                 key, value = match.groups()
-                # 移除引号（如果有）
+                # Remove quotes (if any)
                 if value.startswith('"') and value.endswith('"'):
                     value = value[1:-1]
                 elif value.startswith("'") and value.endswith("'"):
@@ -78,7 +78,7 @@ def load_dotenv(env_path: Optional[Path] = None) -> Dict[str, str]:
 
 
 def str_to_bool(value: str) -> bool:
-    """将字符串转换为布尔值"""
+    """Convert string to boolean value"""
     return value.lower() in ('true', 'yes', '1', 'on')
 
 
@@ -93,7 +93,7 @@ PLACEHOLDER_VALUES = {
 
 
 def is_unset_or_placeholder(value: str) -> bool:
-    """判断配置是否为空或仍是模板占位值"""
+    """Check if config is empty or still a template placeholder value"""
     return not value or value.strip().lower() in PLACEHOLDER_VALUES
 
 
@@ -107,25 +107,25 @@ def load_config(
     force_reload: bool = False
 ) -> Dict[str, Any]:
     """
-    加载配置（从环境变量或 ~/.wukong-email/.env 文件）
+    Load config (from environment variables or ~/.wukong-email/.env file)
 
     Args:
-        email: 邮箱地址（可选，覆盖配置）
-        password: 邮箱密码（可选，覆盖配置）
-        smtp_host: SMTP 服务器（可选，覆盖配置）
-        smtp_port: SMTP 端口（可选，覆盖配置）
-        imap_host: IMAP 服务器（可选，覆盖配置）
-        imap_port: IMAP 端口（可选，覆盖配置）
-        force_reload: 强制重新加载（忽略缓存）
+        email: Email address (optional, overrides config)
+        password: Email password (optional, overrides config)
+        smtp_host: SMTP server (optional, overrides config)
+        smtp_port: SMTP port (optional, overrides config)
+        imap_host: IMAP server (optional, overrides config)
+        imap_port: IMAP port (optional, overrides config)
+        force_reload: Force reload (ignores cache)
 
     Returns:
-        配置字典
+        Config dict
     """
     global _cached_config
 
-    # 使用缓存（如果存在且未强制重新加载）
+    # Use cache (if present and not forced to reload)
     if _cached_config is not None and not force_reload:
-        # 应用参数覆盖
+        # Apply parameter overrides
         if email:
             _cached_config['email'] = email
         if password:
@@ -140,16 +140,16 @@ def load_config(
             _cached_config['imap_port'] = imap_port
         return _cached_config
 
-    # 1. 从用户级 .env 文件加载
+    # 1. Load from user-level .env file
     env_vars = load_dotenv()
 
-    # 2. 优先级：环境变量 > ~/.wukong-email/.env > 默认值（仅非敏感字段）
+    # 2. Priority: env vars > ~/.wukong-email/.env > defaults (non-sensitive fields only)
     config = {
-        # 邮箱凭据（必填，无默认值）
+        # Email credentials (required, no default)
         'email': os.getenv('EMAIL_ADDRESS') or env_vars.get('EMAIL_ADDRESS', ''),
         'email_password': os.getenv('EMAIL_PASSWORD') or env_vars.get('EMAIL_PASSWORD', ''),
 
-        # SMTP 配置（必填，无默认值）
+        # SMTP config (required, no default)
         'smtp_host': os.getenv('EMAIL_SMTP_HOST') or env_vars.get('EMAIL_SMTP_HOST', ''),
         'smtp_port': int(os.getenv('EMAIL_SMTP_PORT') or env_vars.get('EMAIL_SMTP_PORT', '465')),
         'smtp_use_ssl': str_to_bool(os.getenv('EMAIL_SMTP_USE_SSL') or env_vars.get('EMAIL_SMTP_USE_SSL', 'true')),
@@ -157,7 +157,7 @@ def load_config(
         'smtp_ssl_ciphers': os.getenv('EMAIL_SMTP_SSL_CIPHERS') or env_vars.get('EMAIL_SMTP_SSL_CIPHERS',
             'ECDHE-RSA-AES256-GCM-SHA384:AES256-GCM-SHA384'),
 
-        # IMAP 配置（必填，无默认值）
+        # IMAP config (required, no default)
         'imap_host': os.getenv('EMAIL_IMAP_HOST') or env_vars.get('EMAIL_IMAP_HOST', ''),
         'imap_port': int(os.getenv('EMAIL_IMAP_PORT') or env_vars.get('EMAIL_IMAP_PORT', '993')),
         'imap_use_ssl': str_to_bool(os.getenv('EMAIL_IMAP_USE_SSL') or env_vars.get('EMAIL_IMAP_USE_SSL', 'true')),
@@ -165,18 +165,18 @@ def load_config(
         'imap_ssl_ciphers': os.getenv('EMAIL_IMAP_SSL_CIPHERS') or env_vars.get('EMAIL_IMAP_SSL_CIPHERS',
             'ECDHE-RSA-AES256-GCM-SHA384:AES256-GCM-SHA384'),
 
-        # 可选：发件人显示名称
+        # Optional: sender display name
         'from_name': os.getenv('EMAIL_FROM_NAME') or env_vars.get('EMAIL_FROM_NAME', ''),
 
-        # 已发送文件夹配置
+        # Sent folder config
         'enable_save_to_sent': str_to_bool(os.getenv('EMAIL_ENABLE_SAVE_TO_SENT') or env_vars.get('EMAIL_ENABLE_SAVE_TO_SENT', 'true')),
         'sent_folder': os.getenv('EMAIL_SENT_FOLDER') or env_vars.get('EMAIL_SENT_FOLDER', 'Sent'),
-        
-        # 附件下载目录配置
+
+        # Attachment download directory config
         'attachments_dir': os.getenv('EMAIL_ATTACHMENTS_DIR') or env_vars.get('EMAIL_ATTACHMENTS_DIR', '~/.wukong-email/attachments'),
     }
 
-    # 3. 参数覆盖（优先级最高）
+    # 3. Parameter overrides (highest priority)
     if email:
         config['email'] = email
     if password:
@@ -190,7 +190,7 @@ def load_config(
     if imap_port:
         config['imap_port'] = imap_port
 
-    # 4. 验证必填配置（缺失时抛出异常）
+    # 4. Validate required config (raise on missing)
     required_fields = {
         'EMAIL_ADDRESS': config['email'],
         'EMAIL_PASSWORD': config['email_password'],
@@ -201,24 +201,24 @@ def load_config(
     missing_fields = [field for field, value in required_fields.items() if is_unset_or_placeholder(value)]
 
     if missing_fields:
-        print("❌ 错误: 缺少必填配置项，或配置仍是模板占位值！")
-        print(f"   需要修改: {', '.join(missing_fields)}")
+        print("Error: Missing required config fields, or config still has template placeholder values!")
+        print(f"   Need to update: {', '.join(missing_fields)}")
         print()
-        print("📝 请在 ~/.wukong-email/.env 中配置以下内容：")
+        print("Please configure the following in ~/.wukong-email/.env:")
         print()
-        print("   # 邮箱凭据（必填）")
+        print("   # Email credentials (required)")
         print("   EMAIL_ADDRESS=your-email@example.com")
         print("   EMAIL_PASSWORD=your-password")
         print()
-        print("   # SMTP 配置（必填）")
+        print("   # SMTP config (required)")
         print("   EMAIL_SMTP_HOST=smtp.example.com")
         print()
-        print("   # IMAP 配置（必填）")
+        print("   # IMAP config (required)")
         print("   EMAIL_IMAP_HOST=imap.example.com")
         print()
         raise SystemExit(1)
 
-    # 5. 缓存配置
+    # 5. Cache config
     _cached_config = config
 
     return config
@@ -226,24 +226,24 @@ def load_config(
 
 def get_config(key: str, default: Any = None) -> Any:
     """
-    获取单个配置项
+    Get a single config item
 
     Args:
-        key: 配置键名
-        default: 默认值
+        key: Config key name
+        default: Default value
 
     Returns:
-        配置值，如果不存在返回默认值
+        Config value, or default if not found
     """
     config = load_config()
     return config.get(key, default)
 
 
 def mask_password(password: str) -> str:
-    """密码脱敏
+    """Mask password for display
 
-    - 长度 >= 5: 前2位 + *** + 后2位（如：Yt***11）
-    - 长度 < 5: ***
+    - Length >= 5: first 2 chars + *** + last 2 chars (e.g. Yt***11)
+    - Length < 5: ***
     """
     if len(password) < 5:
         return "***"
@@ -251,41 +251,41 @@ def mask_password(password: str) -> str:
 
 
 def print_config():
-    """打印当前配置（隐藏密码）"""
+    """Print current config (with password masked)"""
     config = load_config()
 
-    print("═══════════════════════════════════════════════════════════")
-    print("📧 悟空邮件工具包 - 当前配置")
-    print("═══════════════════════════════════════════════════════════")
+    print("===========================================================")
+    print("Wukong Email Toolkit - Current config")
+    print("===========================================================")
 
-    print(f"📮 邮箱地址: {config['email']}")
+    print(f"Email address: {config['email']}")
     password = config['email_password']
     if password:
         masked = mask_password(password)
-        print(f"🔑 邮箱密码: {masked}")
+        print(f"Email password: {masked}")
     else:
-        print(f"🔑 邮箱密码: (未配置)")
+        print("Email password: (not configured)")
 
     print()
-    print("📤 SMTP 配置:")
-    print(f"   服务器: {config['smtp_host']}:{config['smtp_port']}")
-    print(f"   SSL: {'启用' if config['smtp_use_ssl'] else '禁用'}")
-    print(f"   验证证书: {'是' if config['smtp_ssl_verify'] else '否（适用于自签名或私有 CA 证书）'}")
-    print(f"   加密套件: {config['smtp_ssl_ciphers']}")
+    print("SMTP config:")
+    print(f"   Server: {config['smtp_host']}:{config['smtp_port']}")
+    print(f"   SSL: {'Enabled' if config['smtp_use_ssl'] else 'Disabled'}")
+    print(f"   Verify certificate: {'Yes' if config['smtp_ssl_verify'] else 'No (for self-signed or private CA certificates)'}")
+    print(f"   Cipher suite: {config['smtp_ssl_ciphers']}")
 
     print()
-    print("📥 IMAP 配置:")
-    print(f"   服务器: {config['imap_host']}:{config['imap_port']}")
-    print(f"   SSL: {'启用' if config['imap_use_ssl'] else '禁用'}")
-    print(f"   验证证书: {'是' if config['imap_ssl_verify'] else '否（适用于自签名或私有 CA 证书）'}")
-    print(f"   加密套件: {config['imap_ssl_ciphers']}")
+    print("IMAP config:")
+    print(f"   Server: {config['imap_host']}:{config['imap_port']}")
+    print(f"   SSL: {'Enabled' if config['imap_use_ssl'] else 'Disabled'}")
+    print(f"   Verify certificate: {'Yes' if config['imap_ssl_verify'] else 'No (for self-signed or private CA certificates)'}")
+    print(f"   Cipher suite: {config['imap_ssl_ciphers']}")
 
     if config['from_name']:
-        print(f"   发件人名称: {config['from_name']}")
+        print(f"   Sender name: {config['from_name']}")
 
-    print("═══════════════════════════════════════════════════════════")
+    print("===========================================================")
 
 
-# 命令行测试
+# CLI test
 if __name__ == '__main__':
     print_config()

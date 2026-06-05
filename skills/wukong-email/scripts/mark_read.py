@@ -1,16 +1,16 @@
 #!/usr/bin/env python3
 """
-Wukong Email - 标记邮件已读
-============================
+Wukong Email - Mark Emails as Read
+===================================
 
-支持多种方式标记邮件为已读：
-  --before DATE    标记指定日期之前的邮件
-  --from EMAIL     标记特定发件人的邮件
-  --subject TEXT   标记主题包含文本的邮件
-  --uids UID1,UID2 标记指定UID的邮件
-  --days N         标记最近N天的邮件
+Mark emails as read using various criteria:
+  --before DATE    Mark emails before the specified date
+  --from EMAIL     Mark emails from a specific sender
+  --subject TEXT   Mark emails whose subject contains text
+  --uids UID1,UID2 Mark emails with specified UIDs
+  --days N         Mark emails from the last N days
 
-默认输出 JSON（供 Agent 解析），--table 切换人类可读表格。
+Default output is JSON (for Agent parsing).
 """
 
 import imaplib
@@ -26,44 +26,31 @@ from config_loader import load_config
 
 
 def create_ssl_context(ssl_config: dict = None):
-    """
-    创建SSL上下文
-    
-    Args:
-        ssl_config: SSL配置字典，包含 verify, check_hostname, ciphers
-        
-    Returns:
-        SSL上下文对象
-    """
+    """Create SSL context with the given configuration."""
     if ssl_config is None:
         ssl_config = {}
-    
+
     context = ssl.SSLContext(ssl.PROTOCOL_TLS_CLIENT)
-    
-    # 根据配置设置SSL选项
     context.check_hostname = ssl_config.get('check_hostname', False)
     context.verify_mode = ssl.CERT_NONE if not ssl_config.get('verify', False) else ssl.CERT_REQUIRED
-    
-    # 设置最低TLS版本
     context.minimum_version = ssl.TLSVersion.TLSv1_2
-    
-    # 设置加密套件
+
     ciphers = ssl_config.get('ciphers', [])
     if ciphers:
         context.set_ciphers(':'.join(ciphers))
-    
+
     return context
 
 
 def mark_read(config, search_criteria=None, uids=None, batch_size=200):
     """
-    标记邮件为已读
+    Mark emails as read.
 
     Args:
-        config: 配置字典
-        search_criteria: IMAP 搜索条件（与 uids 二选一）
-        uids: 指定 UID 列表（与 search_criteria 二选一）
-        batch_size: 批量标记每批数量
+        config: Configuration dict
+        search_criteria: IMAP search criteria (mutually exclusive with uids)
+        uids: Comma-separated UID list (mutually exclusive with search_criteria)
+        batch_size: Number of emails per batch
 
     Returns:
         dict: {success: int, fail: int, total: int}
@@ -73,7 +60,6 @@ def mark_read(config, search_criteria=None, uids=None, batch_size=200):
     imap_user = config['email']
     imap_password = config['email_password']
 
-    # 构建SSL配置
     ssl_config = {
         'verify': config.get('imap_ssl_verify', False),
         'check_hostname': config.get('imap_ssl_verify', False),
@@ -90,9 +76,7 @@ def mark_read(config, search_criteria=None, uids=None, batch_size=200):
         imap.login(imap_user, imap_password)
         imap.select('INBOX')
 
-        # 获取要标记的 UID
         if uids:
-            # 指定 UID，验证存在性
             status, messages = imap.uid('SEARCH', None, 'UID', uids.replace(' ', ''))
             if status != 'OK':
                 return {'success': 0, 'fail': 0, 'total': 0}
@@ -101,7 +85,6 @@ def mark_read(config, search_criteria=None, uids=None, batch_size=200):
             if not target_uids or target_uids == ['']:
                 return {'success': 0, 'fail': 0, 'total': 0}
         elif search_criteria:
-            # 搜索条件，按 UID 搜索
             status, messages = imap.uid('SEARCH', None, search_criteria.encode('utf-8'))
             if status != 'OK':
                 return {'success': 0, 'fail': 0, 'total': 0}
@@ -110,12 +93,11 @@ def mark_read(config, search_criteria=None, uids=None, batch_size=200):
             if not target_uids or target_uids == ['']:
                 return {'success': 0, 'fail': 0, 'total': 0}
         else:
-            print("错误：必须指定搜索条件或 UID", file=sys.stderr)
+            print("Error: search criteria or UIDs required", file=sys.stderr)
             return {'success': 0, 'fail': 0, 'total': 0}
 
         total = len(target_uids)
 
-        # 分批标记已读
         success = 0
         fail = 0
         for i in range(0, total, batch_size):
@@ -133,12 +115,12 @@ def mark_read(config, search_criteria=None, uids=None, batch_size=200):
         return {'success': success, 'fail': fail, 'total': total}
 
     except Exception as e:
-        print(f"错误: {e}", file=sys.stderr)
+        print(f"Error: {e}", file=sys.stderr)
         return {'success': 0, 'fail': 0, 'total': 0}
 
 
 def build_search_criteria(args):
-    """根据命令行参数构建 IMAP SEARCH 条件"""
+    """Build IMAP SEARCH criteria from command-line arguments."""
     criteria = []
 
     if args.before:
@@ -165,36 +147,33 @@ def build_search_criteria(args):
 
 
 def main():
-    parser = argparse.ArgumentParser(description='标记邮件已读')
+    parser = argparse.ArgumentParser(description='Mark emails as read')
 
-    # 搜索条件
     parser.add_argument('--before', type=str,
-                       help='标记此日期之前的邮件（格式: DD-Mon-YYYY，如 01-May-2026）')
+                       help='Mark emails before this date (format: DD-Mon-YYYY, e.g. 01-May-2026)')
     parser.add_argument('--days', type=int,
-                       help='标记最近 N 天的邮件')
+                       help='Mark emails from the last N days')
     parser.add_argument('--from', dest='from_sender', type=str,
-                       help='标记特定发件人的邮件')
+                       help='Mark emails from a specific sender')
     parser.add_argument('--subject', type=str,
-                       help='标记主题包含文本的邮件')
+                       help='Mark emails whose subject contains text')
     parser.add_argument('--unread', action='store_true',
-                       help='只标记未读邮件（推荐，避免重复标记）')
+                       help='Only mark unread emails (recommended)')
     parser.add_argument('--uids', type=str,
-                       help='标记指定UID的邮件（逗号分隔）')
+                       help='Mark emails with specified UIDs (comma-separated)')
 
-    # 输出控制
     parser.add_argument('--dry-run', action='store_true',
-                       help='只预览，不实际标记')
+                       help='Preview only, do not mark')
 
     args = parser.parse_args()
 
     if not any([args.before, args.days, args.from_sender, args.subject, args.unread, args.uids]):
-        print("错误：必须指定至少一个条件（--before/--days/--from/--subject/--unread/--uids）", file=sys.stderr)
+        print("Error: at least one condition required (--before/--days/--from/--subject/--unread/--uids)", file=sys.stderr)
         sys.exit(1)
 
     config = load_config()
 
     if args.dry_run:
-        # 预览：先搜索看有多少封
         if args.uids:
             count = len(args.uids.split(','))
         else:
@@ -212,13 +191,12 @@ def main():
                 imap.close()
                 imap.logout()
             except Exception as e:
-                print(f"错误: {e}", file=sys.stderr)
+                print(f"Error: {e}", file=sys.stderr)
                 sys.exit(1)
 
         result = {'action': 'preview', 'count': count, 'criteria': search_criteria if not args.uids else f'uids={args.uids}'}
         print(json.dumps(result, ensure_ascii=False))
     else:
-        # 执行标记
         if args.uids:
             result = mark_read(config, uids=args.uids)
         else:

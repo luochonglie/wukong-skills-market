@@ -16,13 +16,13 @@ def get_config_dir() -> Path:
 
 
 def check_and_install_dependencies(skill_dir: Path) -> None:
-    """检查并安装 markdown 库"""
+    """Check and install markdown library"""
     try:
         import markdown
-        print("[✓] markdown 库已安装")
+        print("[OK] markdown library installed")
     except ImportError:
-        print("[!] markdown 库未安装")
-        print("[*] 正在尝试自动安装...")
+        print("[!] markdown library not installed")
+        print("[*] Attempting auto-install...")
         try:
             requirements_txt = skill_dir / "requirements.txt"
             subprocess.run(
@@ -30,9 +30,9 @@ def check_and_install_dependencies(skill_dir: Path) -> None:
                 check=True,
                 capture_output=True
             )
-            print("[✓] markdown 库安装成功")
+            print("[OK] markdown library installed successfully")
         except (subprocess.CalledProcessError, PermissionError):
-            print("[!] 自动安装失败，请手动运行:")
+            print("[!] Auto-install failed, please run manually:")
             print(f"    pip install -r {requirements_txt}")
 
 
