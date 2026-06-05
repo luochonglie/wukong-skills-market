@@ -13,7 +13,7 @@
       "manifest": "skills/wukong-email/skill.json",
       "entrypoint": "skills/wukong-email/SKILL.md",
       "tags": ["email", "smtp", "imap", "ssl", "python", "attachments"],
-      "author": "maintainer@example.com"
+      "author": "luochonglie@hotmail.com"
     }
   ]
 }
