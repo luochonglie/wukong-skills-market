@@ -8,7 +8,7 @@
       "id": "wukong-email",
       "name": "Wukong Email",
       "description": "IMAP/SMTP email automation skill for sending, reading, searching, downloading attachments, marking read, and deleting email.",
-      "version": "1.1.0",
+      "version": "1.1.1",
       "path": "skills/wukong-email",
       "manifest": "skills/wukong-email/skill.json",
       "entrypoint": "skills/wukong-email/SKILL.md",

@@ -1,7 +1,7 @@
 ---
 name: wukong-email
 description: "当用户需要通过 IMAP/SMTP 邮箱发送邮件、读取邮件、搜索/过滤邮件、下载附件、标记已读、删除邮件等操作时触发"
-version: 1.1.0
+version: 1.1.1
 author: luochonglie@hotmail.com
 license: MIT
 metadata:

@@ -92,11 +92,17 @@ def mark_read(config, search_criteria=None, uids=None, batch_size=200):
 
         # 获取要标记的 UID
         if uids:
-            # 指定 UID
-            target_uids = [u.strip() for u in uids.split(',')]
+            # 指定 UID，验证存在性
+            status, messages = imap.uid('SEARCH', None, 'UID', uids.replace(' ', ''))
+            if status != 'OK':
+                return {'success': 0, 'fail': 0, 'total': 0}
+            target_uids = [uid.decode() if isinstance(uid, bytes) else str(uid)
+                          for uid in messages[0].split()]
+            if not target_uids or target_uids == ['']:
+                return {'success': 0, 'fail': 0, 'total': 0}
         elif search_criteria:
-            # 搜索条件
-            status, messages = imap.search(None, search_criteria.encode('utf-8'))
+            # 搜索条件，按 UID 搜索
+            status, messages = imap.uid('SEARCH', None, search_criteria.encode('utf-8'))
             if status != 'OK':
                 return {'success': 0, 'fail': 0, 'total': 0}
             target_uids = [uid.decode() if isinstance(uid, bytes) else str(uid)
@@ -115,7 +121,7 @@ def mark_read(config, search_criteria=None, uids=None, batch_size=200):
         for i in range(0, total, batch_size):
             batch = target_uids[i:i + batch_size]
             uids_str = ','.join(batch)
-            status, _ = imap.store(uids_str, '+FLAGS', '\\Seen')
+            status, _ = imap.uid('STORE', uids_str, '+FLAGS', '\\Seen')
             if status == 'OK':
                 success += len(batch)
             else:
@@ -200,7 +206,7 @@ def main():
                     imap = imaplib.IMAP4(config['imap_host'], config['imap_port'])
                 imap.login(config['email'], config['email_password'])
                 imap.select('INBOX')
-                status, messages = imap.search(None, search_criteria.encode('utf-8'))
+                status, messages = imap.uid('SEARCH', None, search_criteria.encode('utf-8'))
                 uids = messages[0].split()
                 count = len(uids)
                 imap.close()
