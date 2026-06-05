@@ -1,0 +1,41 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/wukong-skills-market/schemas/marketplace.schema.json",
+  "title": "Skills Marketplace",
+  "type": "object",
+  "required": ["schemaVersion", "name", "description", "skills"],
+  "additionalProperties": false,
+  "properties": {
+    "$schema": { "type": "string" },
+    "schemaVersion": { "type": "string", "pattern": "^\\d+\\.\\d+\\.\\d+$" },
+    "name": { "type": "string", "minLength": 1 },
+    "description": { "type": "string", "minLength": 1 },
+    "skills": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/skillEntry" },
+      "uniqueItems": true
+    }
+  },
+  "$defs": {
+    "skillEntry": {
+      "type": "object",
+      "required": ["id", "name", "description", "version", "path", "manifest", "entrypoint", "tags"],
+      "additionalProperties": false,
+      "properties": {
+        "id": { "type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$" },
+        "name": { "type": "string", "minLength": 1 },
+        "description": { "type": "string", "minLength": 1 },
+        "version": { "type": "string", "pattern": "^\\d+\\.\\d+\\.\\d+$" },
+        "path": { "type": "string", "pattern": "^skills/[a-z0-9]+(?:-[a-z0-9]+)*$" },
+        "manifest": { "type": "string", "pattern": "^skills/[a-z0-9]+(?:-[a-z0-9]+)*/skill\\.json$" },
+        "entrypoint": { "type": "string", "pattern": "^skills/[a-z0-9]+(?:-[a-z0-9]+)*/SKILL\\.md$" },
+        "tags": {
+          "type": "array",
+          "items": { "type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$" },
+          "uniqueItems": true
+        },
+        "author": { "type": "string", "minLength": 1 }
+      }
+    }
+  }
+}

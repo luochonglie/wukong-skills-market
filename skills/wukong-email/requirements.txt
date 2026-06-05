@@ -1,0 +1,6 @@
+# Wukong Email - Python 依赖
+# =============================
+# 只需要一个 Markdown 库（用于发送邮件时自动转换）
+
+# Markdown 转 HTML（发送邮件时使用）
+markdown>=3.10

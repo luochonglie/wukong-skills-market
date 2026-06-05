@@ -1,0 +1,19 @@
+{
+  "$schema": "./schemas/marketplace.schema.json",
+  "schemaVersion": "1.0.0",
+  "name": "wukong-skills-market",
+  "description": "A GitHub-hosted market for Wukong agent skills.",
+  "skills": [
+    {
+      "id": "wukong-email",
+      "name": "Wukong Email",
+      "description": "IMAP/SMTP email automation skill for sending, reading, searching, downloading attachments, marking read, and deleting email.",
+      "version": "1.1.0",
+      "path": "skills/wukong-email",
+      "manifest": "skills/wukong-email/skill.json",
+      "entrypoint": "skills/wukong-email/SKILL.md",
+      "tags": ["email", "smtp", "imap", "ssl", "python", "attachments"],
+      "author": "maintainer@example.com"
+    }
+  ]
+}
