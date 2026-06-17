@@ -1,78 +1,78 @@
-# delete_emails.py - 删除邮件
+# delete_emails.py - Delete email
 
-将邮件移动到"已删除"文件夹（可恢复）。
+Move email to the "Deleted" folder (recoverable).
 
-## 功能
+## Features
 
-- IMAP 搜索条件过滤邮件
-- 移动到"已删除"文件夹（可从垃圾箱恢复）
-- 支持预览和确认流程
+- Filter email via IMAP search criteria
+- Move to the "Deleted" folder (recoverable from the trash)
+- Supports a preview-and-confirm flow
 
-## 参数
+## Parameters
 
-| 参数 | 说明 | 必填 |
+| Parameter | Description | Required |
 |------|------|------|
-| `--search CRITERIA` | IMAP 搜索条件 | ✅ |
-| `--folder FOLDER` | 源文件夹（默认 INBOX） | - |
-| `--deleted-folder FOLDER` | 目标文件夹（默认 已删除/Trash） | - |
-| `--limit N` | 最多删除 N 封 | - |
-| `--preview N` | 预览前 N 封（默认 10） | - |
-| `--dry-run` | 预览模式，不执行删除 | - |
-| `--yes` | 跳过确认，直接执行 | - |
+| `--search CRITERIA` | IMAP search criteria | ✅ |
+| `--folder FOLDER` | Source folder (default INBOX) | - |
+| `--deleted-folder FOLDER` | Target folder (default Trash) | - |
+| `--limit N` | Delete at most N | - |
+| `--preview N` | Preview the first N (default 10) | - |
+| `--dry-run` | Preview mode; do not delete | - |
+| `--yes` | Skip confirmation and execute | - |
 
-## IMAP 搜索条件
+## IMAP search criteria
 
-| 条件 | 说明 | 示例 |
+| Criterion | Description | Example |
 |------|------|------|
-| `SINCE "DD-Mon-YYYY"` | 日期之后 | `SINCE "13-May-2026"` |
-| `BEFORE "DD-Mon-YYYY"` | 日期之前 | `BEFORE "01-May-2026"` |
-| `FROM "email"` | 发件人 | `FROM "spam@example.com"` |
-| `SUBJECT "text"` | 主题包含 | `SUBJECT "广告"` |
-| `TO "email"` | 收件人包含 | `TO "user@example.com"` |
-| `UNSEEN` | 未读 | `UNSEEN` |
-| `SEEN` | 已读 | `SEEN` |
-| `FLAGGED` | 已标记 | `FLAGGED` |
+| `SINCE "DD-Mon-YYYY"` | After date | `SINCE "13-May-2026"` |
+| `BEFORE "DD-Mon-YYYY"` | Before date | `BEFORE "01-May-2026"` |
+| `FROM "email"` | Sender | `FROM "spam@example.com"` |
+| `SUBJECT "text"` | Subject contains | `SUBJECT "newsletter"` |
+| `TO "email"` | Recipient contains | `TO "user@example.com"` |
+| `UNSEEN` | Unread | `UNSEEN` |
+| `SEEN` | Read | `SEEN` |
+| `FLAGGED` | Flagged | `FLAGGED` |
 
-可组合：`SINCE "13-May-2026" FROM "notifications"`
+Combinable: `SINCE "13-May-2026" FROM "notifications"`
 
-## 使用示例
+## Usage examples
 
 ```bash
-# 预览（dry-run）
+# Preview (dry-run)
 python3 scripts/delete_emails.py --search "SINCE 13-May-2026" --dry-run
 python3 scripts/delete_emails.py --search 'FROM "spam@example.com"' --dry-run
 
-# 预览数量限制
+# Preview count limit
 python3 scripts/delete_emails.py --search "UNSEEN" --preview 5 --dry-run
 
-# 执行删除（先预览再确认）
+# Execute deletion (preview first, then confirm)
 python3 scripts/delete_emails.py --search "SINCE 13-May-2026" --yes
 
-# 限数量
+# Limit count
 python3 scripts/delete_emails.py --search "UNSEEN" --limit 10 --yes
 
-# 特定主题
-python3 scripts/delete_emails.py --search 'SUBJECT "广告"' --yes
+# Specific subject
+python3 scripts/delete_emails.py --search 'SUBJECT "newsletter"' --yes
 ```
 
-## 强制流程（Agent 必须遵守）
+## Mandatory flow (the agent must follow this)
 
-1. **先 `--dry-run` 预览** → 展示匹配的邮件列表
-2. **等用户确认** → 用户明确说"删除"/"执行"
-3. **加 `--yes` 执行** → 不可逆操作，切勿直接执行
+1. **Preview with `--dry-run` first** → show the matched email list
+2. **Wait for user confirmation** → the user must explicitly say "delete"/"execute"
+3. **Execute with `--yes`** → this is an irreversible operation; never execute directly
 
 ```
-❌ 错误：直接执行删除
+❌ Wrong: executing deletion directly
 python3 scripts/delete_emails.py --search "UNSEEN" --limit 10
 
-✅ 正确：先预览 → 等确认 → 执行
-# 第1步：预览
+✅ Correct: preview → wait for confirmation → execute
+# Step 1: preview
 python3 scripts/delete_emails.py --search "UNSEEN" --limit 10 --dry-run
-# 等用户确认...
-# 第2步：执行
+# Wait for user confirmation...
+# Step 2: execute
 python3 scripts/delete_emails.py --search "UNSEEN" --limit 10 --yes
 ```
 
-## 恢复已删除邮件
+## Recovering deleted email
 
-邮件移到"已删除"文件夹后，可在邮箱客户端从"已删除"文件夹移动回 INBOX。
+After email is moved to the "Deleted" folder, it can be moved back to INBOX from the "Deleted" folder in the mail client.

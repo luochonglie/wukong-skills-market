@@ -1,6 +1,6 @@
-# Wukong Email - Python 依赖
+# Wukong Email - Python dependencies
 # =============================
-# 只需要一个 Markdown 库（用于发送邮件时自动转换）
+# Only a Markdown library is needed (for auto-conversion when sending email)
 
-# Markdown 转 HTML（发送邮件时使用）
+# Markdown to HTML (used when sending email)
 markdown>=3.10

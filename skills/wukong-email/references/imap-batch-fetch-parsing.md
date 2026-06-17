@@ -1,39 +1,39 @@
-# IMAP 批量 FETCH 响应解析
+# Parsing batch IMAP FETCH responses
 
-## 问题
+## The problem
 
-使用 `imap.fetch(uids_str, '(UID RFC822.SIZE RFC822.HEADER BODYSTRUCTURE)')` 批量获取多封邮件时，返回的 `data` 列表是**混合格式**——既有 `bytes` 行，也有 `tuple` 行。
+When batch-fetching multiple emails with `imap.fetch(uids_str, '(UID RFC822.SIZE RFC822.HEADER BODYSTRUCTURE)')`, the returned `data` list is a **mixed format** — some rows are `bytes`, some are `tuple`.
 
-## 响应格式
+## Response format
 
 ```python
-# 典型的 3 封邮件批量 FETCH 响应：
+# A typical batch FETCH response for 3 emails:
 data = [
-    # 邮件1: tuple — part[0] 含元数据，part[1] 含邮件头
+    # Email 1: tuple — part[0] holds metadata, part[1] holds the headers
     (b'2065 (UID 2471 BODYSTRUCTURE (...) RFC822.SIZE 7264 RFC822.HEADER {2459}',
      b'X-RM-TagInfo: ...\r\nFrom: ...\r\nSubject: ...\r\n\r\n'),
-    # 分隔符
+    # Separator
     b')',
-    # 邮件2: 同上
+    # Email 2: same shape
     (b'2066 (UID 2472 BODYSTRUCTURE (...) RFC822.SIZE 14964 RFC822.HEADER {8726}',
-     b'...邮件头...'),
+     b'...headers...'),
     b')',
-    # 邮件3
+    # Email 3
     (b'2067 ...',
-     b'...邮件头...'),
+     b'...headers...'),
     b')',
 ]
 ```
 
-**关键发现**：
-- 某些 IMAP 服务器会把所有数据都放在 **tuple** 里
-- `part[0]`（tuple[0]）包含：序列号、UID、BODYSTRUCTURE、RFC822.SIZE、RFC822.HEADER 的 literal 大小 `{N}`
-- `part[1]`（tuple[1]）包含：完整邮件头（N 字节）
-- `b')'` 是每封邮件的分隔符
+**Key findings**:
+- Some IMAP servers put all the data inside the **tuple**
+- `part[0]` (tuple[0]) contains: sequence number, UID, BODYSTRUCTURE, RFC822.SIZE, and the literal size `{N}` of RFC822.HEADER
+- `part[1]` (tuple[1]) contains: the full headers (N bytes)
+- `b')'` is the per-email separator
 
-**其他服务器可能不同**：有些服务器 UID/SIZE 在独立 bytes 行，HEADER 在 tuple 里。必须兼容两种。
+**Other servers differ**: some put UID/SIZE on a standalone `bytes` row and the HEADER inside the tuple. You must handle both.
 
-## 正确解析方法
+## Correct parsing
 
 ```python
 uid_size_map = {}   # seq_num -> {uid, size}
@@ -44,31 +44,31 @@ i = 0
 while i < len(data):
     item = data[i]
     if isinstance(item, bytes):
-        # 独立 bytes 行：可能含 UID/SIZE/BODYSTRUCTURE
+        # Standalone bytes row: may contain UID/SIZE/BODYSTRUCTURE
         seq_match = re.search(rb'^(\d+)\s+\(', item)
         if seq_match:
             current_seq = seq_match.group(1).decode()
             uid_size_map.setdefault(current_seq, {'uid': '', 'size': 0})
-            # 提取 UID
+            # Extract UID
             uid_match = re.search(rb'UID\s+(\d+)', item)
             if uid_match:
                 uid_size_map[current_seq]['uid'] = uid_match.group(1).decode()
-            # 提取 SIZE
+            # Extract SIZE
             size_match = re.search(rb'RFC822\.SIZE\s+(\d+)', item)
             if size_match:
                 uid_size_map[current_seq]['size'] = int(size_match.group(1))
-            # 提取 BODYSTRUCTURE
+            # Extract BODYSTRUCTURE
             if b'BODYSTRUCTURE' in item:
                 header_bs_map.setdefault(current_seq, {'header': None, 'bodystructure': None})
                 header_bs_map[current_seq]['bodystructure'] = item
     elif isinstance(item, tuple):
-        # tuple: part[0] 含序列号+UID+SIZE+BODYSTRUCTURE, part[1] 含邮件头
+        # tuple: part[0] holds seq+UID+SIZE+BODYSTRUCTURE, part[1] holds the headers
         for part in item:
             if not isinstance(part, bytes):
                 continue
             seq_match = re.search(rb'^(\d+)\s+\(', part)
             if seq_match:
-                # 元数据行
+                # Metadata row
                 current_seq = seq_match.group(1).decode()
                 uid_size_map.setdefault(current_seq, {'uid': '', 'size': 0})
                 uid_match = re.search(rb'UID\s+(\d+)', part)
@@ -81,32 +81,32 @@ while i < len(data):
                     header_bs_map.setdefault(current_seq, {'header': None, 'bodystructure': None})
                     header_bs_map[current_seq]['bodystructure'] = part
             elif current_seq:
-                # 邮件头（tuple 的最后一个 part）
+                # Headers (the last part of the tuple)
                 header_bs_map.setdefault(current_seq, {'header': None, 'bodystructure': None})
                 header_bs_map[current_seq]['header'] = part
     i += 1
 ```
 
-## 错误做法
+## Wrong approaches
 
 ```python
-# ❌ 只处理 tuple，忽略 bytes 行
+# ❌ Only handling tuple, ignoring bytes rows
 while i < len(data):
     if isinstance(data[i], tuple):
-        # 只在这里解析... 会漏掉独立 bytes 行的 UID/SIZE
+        # Only parse here... you'll miss the UID/SIZE on standalone bytes rows
 
-# ❌ 假设 tuple 的 part[1] 一定是邮件头
-# 有些服务器的 tuple 里 bodystructure 和 header 的顺序可能不同
-# 应该用 re.search(rb'^(\d+)\s+\(', part) 判断是元数据行还是邮件头
+# ❌ Assuming tuple's part[1] is always the headers
+# On some servers the bodystructure and header order inside the tuple may differ
+# Use re.search(rb'^(\d+)\s+\(', part) to decide whether it's a metadata row or a header
 
-# ❌ 用 header 长度估算邮件大小
-email_data['size'] = len(header_data)  # 错误！应用 RFC822.SIZE
+# ❌ Estimating email size from header length
+email_data['size'] = len(header_data)  # Wrong! Use RFC822.SIZE
 ```
 
-## 验证
+## Verification
 
 ```python
-# 单独获取 RFC822.SIZE 验证
+# Fetch RFC822.SIZE separately to verify
 status, data = imap.fetch(uids_str, '(RFC822.SIZE)')
-# bytes 行: b'2065 ( RFC822.SIZE 7264)'
+# bytes row: b'2065 ( RFC822.SIZE 7264)'
 ```

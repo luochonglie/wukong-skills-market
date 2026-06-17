@@ -1,86 +1,86 @@
-# fetch_emails.py - 获取邮件
+# fetch_emails.py - Fetch email
 
-根据 UID 获取邮件内容和下载附件。
+Fetch email content by UID and download attachments.
 
-## 功能
+## Features
 
-- 根据 UID 列表获取邮件内容
-- 下载邮件附件（自动区分真实附件和内嵌图片）
-- 支持中文文件名解码（RFC 2047 / RFC 2231 / URL 编码）
+- Fetch email content by a UID list
+- Download email attachments (auto-distinguishes real attachments from inline images)
+- Encoded-filename decoding support (RFC 2047 / RFC 2231 / URL encoding)
 
-## 参数
+## Parameters
 
-| 参数 | 说明 | 必填 |
+| Parameter | Description | Required |
 |------|------|------|
-| `--uids UID1,UID2,...` | 邮件 UID 列表（逗号分隔） | ✅ |
-| `--download-attachments` | 自动下载附件 | - |
-| `--force-download` | 强制重新下载（覆盖已存在） | - |
-| `--list` | 只列出邮件，不显示正文 | - |
-| `--full` | 显示完整正文（默认只显示前 500 字符） | - |
-| `--folder FOLDER` | 邮箱文件夹（默认 INBOX） | - |
-| `--limit N` | 获取数量（默认 10） | - |
+| `--uids UID1,UID2,...` | Email UID list (comma-separated) | ✅ |
+| `--download-attachments` | Auto-download attachments | - |
+| `--force-download` | Force re-download (overwrite existing) | - |
+| `--list` | Only list emails; do not show body | - |
+| `--full` | Show full body (default: first 500 chars only) | - |
+| `--folder FOLDER` | Mailbox folder (default INBOX) | - |
+| `--limit N` | Number to fetch (default 10) | - |
 
-## 使用示例
+## Usage examples
 
 ```bash
-# 列出邮件（不显示正文）
+# List emails (no body shown)
 python3 scripts/fetch_emails.py --uids 2060,2061,2062 --list
 
-# 获取完整邮件
+# Fetch full emails
 python3 scripts/fetch_emails.py --uids 2060,2061 --full
 
-# 下载附件
+# Download attachments
 python3 scripts/fetch_emails.py --uids 2060,2061 --download-attachments
 
-# 强制重新下载
+# Force re-download
 python3 scripts/fetch_emails.py --uids 2060 --download-attachments --force-download
 ```
 
-## 输出说明
+## Output description
 
-### --list（仅列出）
+### --list (list only)
 
 ```
-=== 邮件 1/2 ===
+=== Email 1/2 ===
 UID: 2061
-发件人: 发件人 <user@example.com>
-主题: 测试邮件
-时间: 2026-05-22 08:12:34
-大小: 7264 bytes
-附件: 1 个
-  - 测试文档.pdf
+From: Sender <user@example.com>
+Subject: Test email
+Time: 2026-05-22 08:12:34
+Size: 7264 bytes
+Attachments: 1
+  - document.pdf
 
-=== 邮件 2/2 ===
+=== Email 2/2 ===
 ...
 ```
 
 ### --download-attachments
 
 ```
-正在获取邮件 UID: 2060, 2061
-[2060] 主题: 测试邮件
-  找到附件: 测试文档.pdf (23456 bytes)
-  保存到: ~/.wukong-email/attachments/2060/测试文档.pdf
-  保存 email_info.txt
-[2061] 主题: 报表
-  找到附件: 月度报表.xlsx (56789 bytes)
-  保存到: ~/.wukong-email/attachments/2061/月度报表.xlsx
+Fetching emails UID: 2060, 2061
+[2060] Subject: Test email
+  Found attachment: document.pdf (23456 bytes)
+  Saved to: ~/.wukong-email/attachments/2060/document.pdf
+  Saved email_info.txt
+[2061] Subject: Report
+  Found attachment: monthly-report.xlsx (56789 bytes)
+  Saved to: ~/.wukong-email/attachments/2061/monthly-report.xlsx
 ```
 
-## 附件保存位置
+## Attachment save location
 
 ```
 EMAIL_ATTACHMENTS_DIR/
 └── <UID>/
-    ├── 文件名1.ext
-    ├── 文件名2.ext
-    └── email_info.txt  # 邮件元数据
+    ├── file1.ext
+    ├── file2.ext
+    └── email_info.txt  # email metadata
 ```
 
-## 重要提示
+## Important notes
 
-1. **必须先获取 UID**：先运行 `list_emails.py` 获取 UID，再传给 `fetch_emails.py`
-2. **IMAP 没有搜索功能**：FETCH 只能获取数据，不能搜索。必须 SEARCH → FETCH 两步
-3. **批量获取更快**：用逗号分隔 UID 一次获取，不要循环调用
+1. **You must obtain UIDs first**: run `list_emails.py` to get UIDs, then pass them to `fetch_emails.py`
+2. **IMAP has no search capability**: FETCH only retrieves data, it cannot search. You must do SEARCH → FETCH in two steps
+3. **Batch fetching is faster**: comma-separate UIDs to fetch in one call; do not loop
 
-详见：`references/imap-search-vs-fetch.md`
+See: `references/imap-search-vs-fetch.md`

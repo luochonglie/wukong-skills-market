@@ -1,78 +1,78 @@
-# send_email.py - 发送邮件
+# send_email.py - Send email
 
-发送纯文本、HTML 或 Markdown 邮件，支持附件，发送后自动保存到已发送文件夹。
+Send plain-text, HTML, or Markdown email, with attachment support and automatic save-to-Sent after sending.
 
-## 功能
+## Features
 
-- **纯文本**：直接发送
-- **HTML**：直接发送 HTML 格式
-- **Markdown**：自动检测并转换为 HTML（带内联样式，邮件客户端兼容）
-- **附件**：支持多个附件
-- **自动保存**：发送后自动保存到已发送文件夹
+- **Plain text**: sent as-is
+- **HTML**: send HTML markup directly
+- **Markdown**: auto-detected and converted to HTML (with inlined styles, mail-client compatible)
+- **Attachments**: supports multiple attachments
+- **Auto-save**: automatically saved to the Sent folder after sending
 
-## 参数
+## Parameters
 
-| 参数 | 说明 | 必填 |
+| Parameter | Description | Required |
 |------|------|------|
-| `--to` | 收件人（多个用逗号分隔） | ✅ |
-| `--subject` | 邮件主题 | ✅ |
-| `--body` | 邮件正文 | ✅ |
-| `--html` | 强制 HTML 格式（Markdown 自动检测时也可强制） | - |
-| `--attach FILE` | 附件路径（可多次使用） | - |
-| `--cc` | 抄送 | - |
-| `--bcc` | 密送 | - |
+| `--to` | Recipient(s) (comma-separated for multiple) | ✅ |
+| `--subject` | Email subject | ✅ |
+| `--body` | Email body | ✅ |
+| `--html` | Force HTML format (also works when Markdown is auto-detected) | - |
+| `--attach FILE` | Attachment path (may be repeated) | - |
+| `--cc` | Cc | - |
+| `--bcc` | Bcc | - |
 
-## Markdown 自动转换
+## Markdown auto-conversion
 
-脚本自动检测 Markdown 语法（标题、列表、粗体、代码块、表格等），并转换为带内联样式的 HTML。
+The script auto-detects Markdown syntax (headings, lists, bold, code blocks, tables, etc.) and converts it to HTML with inlined styles.
 
-**依赖**：`python3-markdown`（`sudo apt install python3-markdown`）
+**Dependency**: `python3-markdown` (`sudo apt install python3-markdown`)
 
-未安装时降级为纯文本发送，并显示警告。
+If not installed, it falls back to sending plain text and prints a warning.
 
-## 使用示例
+## Usage examples
 
 ```bash
-# 纯文本
+# Plain text
 python3 scripts/send_email.py --to user@example.com --subject "Hello" --body "World"
 
-# 自动检测 Markdown（推荐）
-python3 scripts/send_email.py --to user@example.com --subject "报告" --body "
-# 今日总结
+# Auto-detect Markdown (recommended)
+python3 scripts/send_email.py --to user@example.com --subject "Report" --body "
+# Today's summary
 
-## 完成事项
-- [x] 任务 A
-- [x] 任务 B
+## Done
+- [x] Task A
+- [x] Task B
 
-## 待办
-1. 任务 C
-2. 任务 D
+## TODO
+1. Task C
+2. Task D
 "
 
-# 强制 HTML
-python3 scripts/send_email.py --to user@example.com --subject "HTML邮件" --html --body "<h1>标题</h1><p>内容</p>"
+# Force HTML
+python3 scripts/send_email.py --to user@example.com --subject "HTML email" --html --body "<h1>Heading</h1><p>Body</p>"
 
-# 带附件
-python3 scripts/send_email.py --to user@example.com --subject "请查收" --body "附件已发送" --attach report.pdf
+# With attachment
+python3 scripts/send_email.py --to user@example.com --subject "Please review" --body "Attachment sent" --attach report.pdf
 
-# 多附件
-python3 scripts/send_email.py --to user@example.com --subject "多附件" --body "请查收" --attach a.pdf --attach b.pdf
+# Multiple attachments
+python3 scripts/send_email.py --to user@example.com --subject "Multiple attachments" --body "Please review" --attach a.pdf --attach b.pdf
 
-# 多收件人 + 抄送
-python3 scripts/send_email.py --to a@example.com,b@example.com --cc c@example.com --subject "群发" --body "内容"
+# Multiple recipients + cc
+python3 scripts/send_email.py --to a@example.com,b@example.com --cc c@example.com --subject "Broadcast" --body "Body"
 ```
 
-## 已发送文件夹
+## Sent folder
 
-发送后自动保存到已发送文件夹。智能检测逻辑：
+After sending, the message is automatically saved to the Sent folder. Smart-detection logic:
 
-1. **精确匹配**：配置 `EMAIL_SENT_FOLDER=已发送` → 匹配 UTF-7 编码 `&XfJT0ZAB-`
-2. **常见名称**：Sent / Sent Items / Sent Mail
-3. **标记检测**：通过 `\Sent` 标记识别
+1. **Exact match**: configure `EMAIL_SENT_FOLDER=Sent` → matches UTF-7 encoding
+2. **Common names**: Sent / Sent Items / Sent Mail
+3. **Flag detection**: identified via the `\Sent` flag
 
-## 常见问题
+## Common issues
 
-| 问题 | 原因 | 解决 |
+| Issue | Cause | Fix |
 |------|------|------|
-| Markdown 未转 HTML | 未加 `--html` 参数 | 加 `--html` 或让脚本自动检测 |
-| 发送失败 | SSL 验证失败 | 检查 `EMAIL_SMTP_SSL_VERIFY=false` |
+| Markdown not converted to HTML | `--html` not passed | Add `--html`, or let the script auto-detect |
+| Send failed | SSL verification failed | Check `EMAIL_SMTP_SSL_VERIFY=false` |

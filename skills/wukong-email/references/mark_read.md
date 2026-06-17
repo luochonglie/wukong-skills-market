@@ -1,45 +1,45 @@
-# mark_read.py - 标记已读
+# mark_read.py - Mark as read
 
-标记邮件为已读/未读状态。
+Mark email as read/unread.
 
-## 功能
+## Features
 
-- 搜索符合条件的邮件
-- 批量标记为已读/未读
-- 支持预览模式
+- Search for emails matching criteria
+- Bulk mark as read/unread
+- Supports a preview mode
 
-## 参数
+## Parameters
 
-| 参数 | 说明 | 必填 |
+| Parameter | Description | Required |
 |------|------|------|
-| `--before DATE` | 日期之前（DD-Mon-YYYY） | - |
-| `--days N` | 最近 N 天 | - |
-| `--from TEXT` | 发件人包含 | - |
-| `--subject TEXT` | 主题包含 | - |
-| `--unread` | 标记为未读（默认已读） | - |
-| `--uids UID1,UID2` | 指定 UID（逗号分隔） | - |
-| `--dry-run` | 预览模式，不执行 | - |
+| `--before DATE` | Before this date (DD-Mon-YYYY) | - |
+| `--days N` | Last N days | - |
+| `--from TEXT` | From contains | - |
+| `--subject TEXT` | Subject contains | - |
+| `--unread` | Mark as unread (defaults to read) | - |
+| `--uids UID1,UID2` | Specify UIDs (comma-separated) | - |
+| `--dry-run` | Preview mode; do not execute | - |
 
-## 使用示例
+## Usage examples
 
 ```bash
-# 预览（推荐先看有多少封）
+# Preview (recommended: see how many first)
 python3 scripts/mark_read.py --before 01-May-2026 --unread --dry-run
 python3 scripts/mark_read.py --from "notifications" --unread --dry-run
 
-# 执行标记
-python3 scripts/mark_read.py --before 01-May-2026 --unread   # 5月1日前未读
-python3 scripts/mark_read.py --from "notifications" --unread  # 通知类邮件
-python3 scripts/mark_read.py --days 7 --unread                # 最近7天未读
-python3 scripts/mark_read.py --uids 2296,2297,2298            # 指定 UID
+# Execute the marking
+python3 scripts/mark_read.py --before 01-May-2026 --unread   # Unread before May 1
+python3 scripts/mark_read.py --from "notifications" --unread  # Notification-style mail
+python3 scripts/mark_read.py --days 7 --unread                 # Unread from the last 7 days
+python3 scripts/mark_read.py --uids 2296,2297,2298             # Specific UIDs
 ```
 
-## 工作流程
+## Workflow
 
 ```
-# 第1步：预览（查看影响多少封）
+# Step 1: preview (see how many are affected)
 python3 scripts/mark_read.py --days 30 --unread --dry-run
 
-# 第2步：确认后执行
+# Step 2: after confirming, execute
 python3 scripts/mark_read.py --days 30 --unread
 ```
