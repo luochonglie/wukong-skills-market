@@ -14,6 +14,17 @@
       "entrypoint": "skills/wukong-email/SKILL.md",
       "tags": ["email", "smtp", "imap", "ssl", "python", "attachments"],
       "author": "luochonglie@hotmail.com"
+    },
+    {
+      "id": "tapd-timesheet-manager",
+      "name": "TAPD Timesheet Manager",
+      "description": "TAPD timesheet and task management skill for querying iterations, analyzing missing timesheets, distributing hours across tasks, and updating task status via the mcp-server-tapd MCP server.",
+      "version": "1.0.0",
+      "path": "skills/tapd-timesheet-manager",
+      "manifest": "skills/tapd-timesheet-manager/skill.json",
+      "entrypoint": "skills/tapd-timesheet-manager/SKILL.md",
+      "tags": ["tapd", "timesheet", "mcp", "task-management", "project-management"],
+      "author": "luochonglie@hotmail.com"
     }
   ]
 }

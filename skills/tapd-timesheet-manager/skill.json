@@ -1,0 +1,14 @@
+{
+  "$schema": "../../schemas/skill.schema.json",
+  "id": "tapd-timesheet-manager",
+  "name": "TAPD Timesheet Manager",
+  "description": "TAPD timesheet and task management skill for querying iterations, analyzing missing timesheets, distributing hours across tasks, and updating task status via the mcp-server-tapd MCP server.",
+  "version": "1.0.0",
+  "entrypoint": "SKILL.md",
+  "tags": ["tapd", "timesheet", "mcp", "task-management", "project-management"],
+  "author": "luochonglie@hotmail.com",
+  "license": "MIT",
+  "compatibility": {
+    "mcp-server-tapd": ">=1.0.0"
+  }
+}

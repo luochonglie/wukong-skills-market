@@ -49,6 +49,7 @@ This repository follows a lightweight skills market contract:
 | Skill | Version | Description |
 | --- | --- | --- |
 | `wukong-email` | `1.1.0` | IMAP/SMTP email automation skill for sending, reading, searching, downloading attachments, marking read, and deleting email. |
+| `tapd-timesheet-manager` | `1.0.0` | TAPD timesheet and task management via the mcp-server-tapd MCP server: query iterations, analyze missing timesheets, distribute hours, and update task status. |
 
 ## Market Index
 

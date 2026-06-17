@@ -49,6 +49,7 @@
 | Skill | 版本 | 说明 |
 | --- | --- | --- |
 | `wukong-email` | `1.1.1` | 基于 IMAP/SMTP 的邮件自动化 skill，支持发送、读取、搜索、下载附件、标记已读和删除邮件。 |
+| `tapd-timesheet-manager` | `1.0.0` | 基于 mcp-server-tapd MCP 服务的 TAPD 工时与任务管理 skill：查询迭代、分析缺失工时、分配工时、更新任务状态。 |
 
 ## 市场索引
 
