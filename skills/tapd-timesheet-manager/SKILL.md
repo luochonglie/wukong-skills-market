@@ -43,20 +43,20 @@ Query the tasks assigned to a specific user within an iteration.
 
 **Key parameters:**
 
-- `workspace_id`: TAPD project ID (e.g. `40888836`)
-- `iteration_id`: iteration ID (e.g. `1140888836001000828`)
-- `owner`: username (e.g. `张三`)
+- `workspace_id`: TAPD project ID (e.g. `<workspace-id>`)
+- `iteration_id`: iteration ID (e.g. `<iteration-id>`)
+- `owner`: username (e.g. `alice`)
 - `entity_type`: `"tasks"` for tasks, `"stories"` for stories
 
 **Tool call pattern:**
 
 ```javascript
 mcp__mcp-server-tapd__get_stories_or_tasks({
-  workspace_id: "40888836",
+  workspace_id: "<workspace-id>",
   options: {
     entity_type: "tasks",
-    iteration_id: "1140888836001000828",
-    owner: "张三",
+    iteration_id: "<iteration-id>",
+    owner: "alice",
     fields: "id,name,status",
     limit: 100
   }
@@ -78,9 +78,9 @@ Analyze which timesheet records are missing within a given date range.
 
 ```javascript
 mcp__mcp-server-tapd__get_timesheets({
-  workspace_id: "40888836",
+  workspace_id: "<workspace-id>",
   options: {
-    owner: "张三",
+    owner: "alice",
     limit: 200,
     order: "spentdate desc"
   }
@@ -104,13 +104,13 @@ Distribute working hours evenly across multiple tasks.
 ```javascript
 // For each missing date and each task
 mcp__mcp-server-tapd__add_timesheets({
-  workspace_id: "40888836",
+  workspace_id: "<workspace-id>",
   options: {
     entity_type: "task",
-    entity_id: "full task ID",
+    entity_id: "<full-task-id>",
     timespent: "allocated hours",
     spentdate: "YYYY-MM-DD",
-    owner: "张三"
+    owner: "alice"
   }
 })
 ```
@@ -129,10 +129,10 @@ Update task status in bulk.
 
 ```javascript
 mcp__mcp-server-tapd__update_story_or_task({
-  workspace_id: "40888836",
+  workspace_id: "<workspace-id>",
   options: {
     entity_type: "tasks",
-    id: "task ID",
+    id: "<task-id>",
     status: "progressing"
   }
 })
@@ -222,7 +222,7 @@ function distributeHours(taskCount, totalHours = 8) {
 
 1. **Timesheet API returns 404**
    - **Cause:** incomplete entity ID.
-   - **Fix:** use the full ID with the workspace_id prefix (e.g. `"1140888836001053133"`, not `"1053133"`).
+   - **Fix:** use the full ID with the workspace_id prefix (e.g. `"<workspace-prefix><full-task-id>"`, not the short suffix).
 
 2. **Missing `owner` parameter**
    - **Cause:** `add_timesheets` called without `owner`.
@@ -292,13 +292,13 @@ function distributeHours(taskCount, totalHours = 8) {
 Updating task status...
 ✅ Successfully updated 7 tasks to "in progress":
 
-- Task 1053133: open → progressing
-- Task 1053072: open → progressing
-- Task 1053066: open → progressing
-- Task 1053055: open → progressing
-- Task 1053049: open → progressing
-- Task 1053039: open → progressing
-- Task 1053033: open → progressing
+- Task <task-1>: open → progressing
+- Task <task-2>: open → progressing
+- Task <task-3>: open → progressing
+- Task <task-4>: open → progressing
+- Task <task-5>: open → progressing
+- Task <task-6>: open → progressing
+- Task <task-7>: open → progressing
 
 ## MCP tool reference
 
